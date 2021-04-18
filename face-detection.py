@@ -1,17 +1,33 @@
 import cv2 
 import argparse
 import numpy as np
+from fastai.vision.all import *
+from PIL import Image
 
-## Ref:
+## Cascade ref:
 ## https://docs.opencv.org/3.4/db/d28/tutorial_cascade_classifier.html
+
+def is_obama(x): 
+    return 'obama' in x
+
+global learn
+learn = load_learner('models/export.pkl')
+
+global img1
+global img2
+
+img1 = cv2.namedWindow("img1", cv2.WINDOW_NORMAL)
+img2 = cv2.namedWindow("img2", cv2.WINDOW_NORMAL)
+
 
 def detect_faces(frame):
     frame_gray = cv2.equalizeHist(frame)
     faces = face_cascade.detectMultiScale(frame_gray)
     return faces
 
-def display_boxes(faces, frame):
+def classify(faces, frame):
     faceROI = None
+    face_class = None
     for (x,y,w,h) in faces:
         center = (x + w//2, y + h//2)
         
@@ -20,20 +36,33 @@ def display_boxes(faces, frame):
         faceROI = frame[y:y+h,x:x+w]
         #print(faceROI)
         
-        # Acha os olhos
-        eyes = eyes_cascade.detectMultiScale(faceROI)
-        for (x2,y2,w2,h2) in eyes:
-            #bounding box dos olhos
-            frame = cv2.rectangle(frame, (x + x2, y + y2), (x + x2 + w2, y + y2+h2), (0, 0, 255), 2)
+        # # Acha os olhos
+        # eyes = eyes_cascade.detectMultiScale(faceROI)
+        # for (x2,y2,w2,h2) in eyes:
+        #     #bounding box dos olhos
+        #     frame = cv2.rectangle(frame, (x + x2, y + y2), (x + x2 + w2, y + y2+h2), (0, 0, 255), 2)
 
-    cv2.imshow('img1', frame)
+    
     if(faceROI is not None):
         cv2.imshow('img2',faceROI)
+        t = torch.tensor(frame)
+        p, tensor, probs = learn.predict(t)
+
+        if(str(p) == 'False'):
+            face_class = 'chris'
+        else:
+            face_class = 'obama'
+
+        frame = cv2.putText(frame, face_class,(x+w, y+h), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0,255,0),3)
+
+        #print(face_class)
+
+        cv2.imshow('img1', frame)
 
 ### configura -- 1. Carrega cascades
 parser = argparse.ArgumentParser(description='Cascade Classifier')
-parser.add_argument('--face_cascade', help='Path to face cascade.', default='data/haarcascades/haarcascade_frontalface_alt.xml')
-parser.add_argument('--eyes_cascade', help='Path to eyes cascade.', default='data/haarcascades/haarcascade_eye_tree_eyeglasses.xml')
+parser.add_argument('--face_cascade', help='Path to face cascade.', default='models/haarcascades/haarcascade_frontalface_alt.xml')
+parser.add_argument('--eyes_cascade', help='Path to eyes cascade.', default='models/haarcascades/haarcascade_eye_tree_eyeglasses.xml')
 parser.add_argument('--camera', help='Camera divide number.', type=int, default=0)
 args = parser.parse_args()
 face_cascade_name = args.face_cascade
@@ -53,9 +82,6 @@ camera_device = args.camera
 # Captura o video
 vid = cv2.VideoCapture(camera_device) 
 
-cv2.namedWindow("img1", cv2.WINDOW_NORMAL)
-cv2.namedWindow("img2", cv2.WINDOW_NORMAL)
-
 while(True): 
       
     # Captura cada frame do video
@@ -68,7 +94,7 @@ while(True):
     faces = detect_faces(gray)
 
     #mostra bounding boxes
-    display_boxes(faces,frame)
+    classify(faces,frame)
 
     # Mostra o frame atual, pode ou não estar com as bordas coloridas
     #cv2.imshow('img1', frame) 
