@@ -7,6 +7,9 @@ from PIL import Image
 ## Cascade ref:
 ## https://docs.opencv.org/3.4/db/d28/tutorial_cascade_classifier.html
 
+## FastAI ref:
+## https://github.com/fastai/fastbook/blob/master/02_production.ipynb
+
 def is_obama(x): 
     return 'obama' in x
 
