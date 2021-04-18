@@ -42,3 +42,7 @@ Para o reconhecimento facial, acabamos utilizando um classificador binário, em 
 ## Limitações
 
 Em função do prazo de entrega, o modelo foi treinado com imagens inteiras, portanto ele só classifica um rosto na imagem. Com mais investimento de tempo no projeto, é possível treinar e testar o modelo somente com os rostos 'recortados' que foram localizados pelo Haar Cascade. Dessa forma, o modelo estaria apto a classificar todos os rostos ao mesmo tempo, em tempo real.
+
+## Resultados
+
+![First test](https://raw.githubusercontent.com/chris-redfield/opencv-face-detection/main/img/test.png)
