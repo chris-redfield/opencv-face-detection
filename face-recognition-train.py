@@ -88,7 +88,9 @@ print(f"Probability it's obama: {probs[1].item():.6f}")
 # In[13]:
 
 
-print("model exported to data/export.pkl")
+print("model exported to models/export.pkl")
+path = Path('models/')
+learn.path = path
 learn.export()
 
 
